@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -12,10 +11,15 @@ class CircleTheLetter extends StatefulWidget {
 class _CircleTheLetterState extends State<CircleTheLetter> {
   var widthUnit;
   var heightUnit;
-
-
-  var letterColors=[Colors.black,Colors.black,Colors.black,Colors.black];
-  static var circleColors=[Colors.white,Colors.white,Colors.white,Colors.white];
+  double positionX=0;
+  double positionY=0;
+  var letterColors = [Colors.black, Colors.black, Colors.black, Colors.black];
+  static var circleColors = [
+    Color(0xfffafafa),
+    Color(0xfffafafa),
+    Color(0xfffafafa),
+    Color(0xfffafafa),
+  ];
   var letterColor = Colors.black;
   var circleColor = Colors.black;
   var words = ['پەنجەرە', 'دەرگا', 'دیوار', 'ئامەد'];
@@ -27,67 +31,56 @@ class _CircleTheLetterState extends State<CircleTheLetter> {
   int rf = 0;
   double textSize = 40;
   RichText richText;
-  var xOffset=0.0;
-  var yOffset=0.0;
-  TapPosition _position = TapPosition(Offset.zero, Offset.zero);
+  TapPosition _position=TapPosition(Offset.zero,Offset.zero);
   @override
   Widget build(BuildContext context) {
     heightUnit = MediaQuery.of(context).size.height / 5;
     widthUnit = MediaQuery.of(context).size.width / 6;
     return Scaffold(
-      body:      Center(
+      body: Center(
         child: Container(
           width: widthUnit * 5,
           height: heightUnit * 3,
           child: ListView.builder(
-
-
             itemCount: words.length,
             itemBuilder: (BuildContext context, int index) {
-              return Stack(
-                children:[
-                  Row(
-                  children: [
-                    GestureDetector(
-                      child: Image.asset('asset/sound.png'),
-                      onTap: () {},
+              return Row(
+                children: [
+                  GestureDetector(
+                    child: Image.asset('asset/sound.png'),
+                    onTap: () {},
+                  ),
+                  CustomPaint(
+                    painter: CurvePainter(circleColors[index],_position.global.dx,_position.global.dy),
+                    child: Center(
+                      child: PositionedTapDetector(
+                        onTap: _onTap,
+                        child: rich(words[index], 'د', index),
+                      ),
                     ),
-                    SizedBox(
-                      width: widthUnit / 4,
-                    ),
-                    PositionedTapDetector(
-                        onTap: onTap,
-                      child: rich(words[index], 'د', index)),
-                    CustomPaint(
-                      painter: CirclePainter(_position.global.dx,_position.global.dy,circleColors[index]),
-                    ),
-                  ],
+                  ),
 
-
-                ),
-                ]
+                ],
               );
             },
           ),
         ),
       ),
     );
-
-  }
-  void onTap(TapPosition position){
-    xOffset=position.global.dx;
-    yOffset=position.global.dy;
   }
   void _onTap(TapPosition position) => _updateState(position);
   void _updateState(TapPosition position) {
+
     setState(() {
       _position = position;
+
     });
+    print(positionY.toString()+'hey there'+positionX.toString());
   }
 
 
   Widget rich(String cWord, String cLetter, int numOfWord) {
-    letterColor=letterColors[numOfWord];
+    letterColor = letterColors[numOfWord];
     word = cWord;
     letter = cLetter;
     if (word.startsWith(letter)) {
@@ -128,9 +121,7 @@ class _CircleTheLetterState extends State<CircleTheLetter> {
                     setState(() {
                       letterColors[numOfWord] = Colors.red;
                       circleColors[numOfWord] = Colors.black;
-
                     });
-
                   }),
           ],
         ),
@@ -161,7 +152,6 @@ class _CircleTheLetterState extends State<CircleTheLetter> {
                     setState(() {
                       letterColors[numOfWord] = Colors.red;
                       circleColors[numOfWord] = Colors.black;
-
                     });
                   }),
             new TextSpan(
@@ -183,30 +173,32 @@ class _CircleTheLetterState extends State<CircleTheLetter> {
   }
 }
 
-class CirclePainter extends CustomPainter {
-  var xOffset;
-  var yOffset;
-  static var color;
-  CirclePainter(var x, var y,var colorCircle) {
-    color=colorCircle;
-    xOffset =x;
-    yOffset =y;
+class CurvePainter extends CustomPainter {
+  var color=Colors.black;
+  var offsetX;
+  var offsetY;
+
+  CurvePainter(var color,var offsetX,var offsetY){
+    this.color=color;
+    this.offsetX=offsetX;
+    this.offsetY=offsetY;
   }
-
-  var wavePaint = Paint()
-    ..color = Colors.black
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 3.0
-    ..isAntiAlias = true;
-
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawCircle(Offset(xOffset,yOffset), 7.0, wavePaint);
+    var paint = Paint();
+
+    paint.strokeWidth = 5;
+
+    paint.color = color;
+    paint.style = PaintingStyle.stroke;
+    canvas.drawCircle(
+        Offset(offsetX,offsetY), size.width / 4, paint);
+
 
   }
 
   @override
-  bool shouldRepaint(CirclePainter oldDelegate) {
+  bool shouldRepaint(CustomPainter oldDelegate) {
     return false;
   }
 }
