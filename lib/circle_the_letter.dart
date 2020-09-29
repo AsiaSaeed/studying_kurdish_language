@@ -29,9 +29,13 @@ class _CircleTheLetterState extends State<CircleTheLetter> {
   String remainPart = "";
   int ff = 0;
   int rf = 0;
-  double textSize = 40;
+  double textSize = 30;
+  var textChangedSize = [30.0,30.0,30.0,30.0];
   RichText richText;
   TapPosition _position=TapPosition(Offset.zero,Offset.zero);
+  GlobalKey _paintKey = new GlobalKey();
+  Offset _offset;
+
   @override
   Widget build(BuildContext context) {
     heightUnit = MediaQuery.of(context).size.height / 5;
@@ -41,32 +45,39 @@ class _CircleTheLetterState extends State<CircleTheLetter> {
         child: Container(
           width: widthUnit * 5,
           height: heightUnit * 3,
-          child: ListView.builder(
-            itemCount: words.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Row(
-                children: [
-                  GestureDetector(
-                    child: Image.asset('asset/sound.png'),
-                    onTap: () {},
-                  ),
-                  CustomPaint(
-                    painter: CurvePainter(circleColors[index],_position.global.dx,_position.global.dy),
-                    child: Center(
-                      child: PositionedTapDetector(
-                        onTap: _onTap,
-                        child: rich(words[index], 'د', index),
-                      ),
-                    ),
-                  ),
+           child: new Listener(
+             onPointerDown: (PointerDownEvent event) {
+               RenderBox referenceBox = _paintKey.currentContext.findRenderObject();
+               Offset offset = referenceBox.globalToLocal(event.position);
+               setState(() {
+                 _offset = offset;
+               });
+             },
+             child: new CustomPaint(
+               key: _paintKey,
+               painter: new MyCustomPainter(_offset),
+               child:    ListView.builder(
+                 itemCount: words.length,
+                 itemBuilder: (BuildContext context, int index) {
+                   return Row(
+                     children: [
+                       GestureDetector(
+                         child: Image.asset('asset/sound.png'),
+                         onTap: () {},
+                       ),
+                        rich(words[index],'د',index)
 
-                ],
-              );
-            },
-          ),
+                     ],
+                   );
+                 },
+               ),
+             ),
+           ),
+        )
+
+
         ),
-      ),
-    );
+      );
   }
   void _onTap(TapPosition position) => _updateState(position);
   void _updateState(TapPosition position) {
@@ -89,12 +100,13 @@ class _CircleTheLetterState extends State<CircleTheLetter> {
         children: <TextSpan>[
           new TextSpan(
               text: letter,
-              style: (TextStyle(color: letterColor, fontSize: textSize)),
+              style: (TextStyle(color: letterColor, fontSize: textChangedSize[numOfWord])),
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
                   setState(() {
-                    letterColors[numOfWord] = Colors.red;
+                    letterColors[numOfWord] = Colors.green;
                     circleColors[numOfWord] = Colors.black;
+                    textChangedSize[numOfWord]=50;
                   });
                 }),
           new TextSpan(
@@ -115,12 +127,13 @@ class _CircleTheLetterState extends State<CircleTheLetter> {
                 style: TextStyle(color: Colors.black, fontSize: textSize)),
             new TextSpan(
                 text: letter,
-                style: (TextStyle(color: letterColor, fontSize: textSize)),
+                style: (TextStyle(color: letterColor, fontSize: textChangedSize[numOfWord])),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
                     setState(() {
-                      letterColors[numOfWord] = Colors.red;
+                      letterColors[numOfWord] = Colors.green;
                       circleColors[numOfWord] = Colors.black;
+                      textChangedSize[numOfWord]=50;
                     });
                   }),
           ],
@@ -146,12 +159,13 @@ class _CircleTheLetterState extends State<CircleTheLetter> {
                 style: TextStyle(color: Colors.black, fontSize: textSize)),
             new TextSpan(
                 text: letter,
-                style: (TextStyle(color: letterColor, fontSize: textSize)),
+                style: (TextStyle(color: letterColor, fontSize: textChangedSize[numOfWord])),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
                     setState(() {
-                      letterColors[numOfWord] = Colors.red;
+                      letterColors[numOfWord] = Colors.green;
                       circleColors[numOfWord] = Colors.black;
+                      textChangedSize[numOfWord]=50;
                     });
                   }),
             new TextSpan(
@@ -172,33 +186,16 @@ class _CircleTheLetterState extends State<CircleTheLetter> {
     return richText;
   }
 }
+class MyCustomPainter extends CustomPainter {
+  final Offset _offset;
+  MyCustomPainter(this._offset);
 
-class CurvePainter extends CustomPainter {
-  var color=Colors.black;
-  var offsetX;
-  var offsetY;
-
-  CurvePainter(var color,var offsetX,var offsetY){
-    this.color=color;
-    this.offsetX=offsetX;
-    this.offsetY=offsetY;
-  }
   @override
   void paint(Canvas canvas, Size size) {
-    var paint = Paint();
-
-    paint.strokeWidth = 5;
-
-    paint.color = color;
-    paint.style = PaintingStyle.stroke;
-    canvas.drawCircle(
-        Offset(offsetX,offsetY), size.width / 4, paint);
-
-
+    if (_offset == null) return;
+    canvas.drawCircle(_offset, 20.0, new Paint()..color = Colors.black);
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
-  }
+  bool shouldRepaint(MyCustomPainter other) => other._offset != _offset;
 }
